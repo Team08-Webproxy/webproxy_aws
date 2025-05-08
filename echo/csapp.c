@@ -131,7 +131,7 @@ unsigned int Sleep(unsigned int secs)
 unsigned int Alarm(unsigned int seconds) {
     return alarm(seconds);
 }
-
+ 
 void Setpgid(pid_t pid, pid_t pgid) {
     int rc;
 
@@ -294,7 +294,7 @@ void sio_error(char s[]) /* Put error message and exit */
 ssize_t Sio_putl(long v)
 {
     ssize_t n;
-
+  
     if ((n = sio_putl(v)) < 0)
 	sio_error("Sio_putl error");
     return n;
@@ -303,7 +303,7 @@ ssize_t Sio_putl(long v)
 ssize_t Sio_puts(char s[])
 {
     ssize_t n;
-
+  
     if ((n = sio_puts(s)) < 0)
 	sio_error("Sio_puts error");
     return n;
@@ -614,7 +614,8 @@ void Getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host,
 {
     int rc;
 
-    if ((rc = getnameinfo(sa, salen, host, hostlen, serv, servlen, flags)) != 0) 
+    if ((rc = getnameinfo(sa, salen, host, hostlen, serv, 
+                          servlen, flags)) != 0) 
         gai_error(rc, "Getnameinfo error");
 }
 
@@ -710,7 +711,7 @@ void Pthread_exit(void *retval) {
 pthread_t Pthread_self(void) {
     return pthread_self();
 }
-
+ 
 void Pthread_once(pthread_once_t *once_control, void (*init_function)()) {
     pthread_once(once_control, init_function);
 }
@@ -754,9 +755,9 @@ ssize_t rio_readn(int fd, void *usrbuf, size_t n)
     while (nleft > 0) {
 	if ((nread = read(fd, bufp, nleft)) < 0) {
 	    if (errno == EINTR) /* Interrupted by sig handler return */
-		    nread = 0;      /* and call read() again */
-        else
-		    return -1;      /* errno set by read() */ 
+		nread = 0;      /* and call read() again */
+	    else
+		return -1;      /* errno set by read() */ 
 	} 
 	else if (nread == 0)
 	    break;              /* EOF */
@@ -780,9 +781,9 @@ ssize_t rio_writen(int fd, void *usrbuf, size_t n)
     while (nleft > 0) {
 	if ((nwritten = write(fd, bufp, nleft)) <= 0) {
 	    if (errno == EINTR)  /* Interrupted by sig handler return */
-		    nwritten = 0;    /* and call write() again */
-        else
-		    return -1;       /* errno set by write() */
+		nwritten = 0;    /* and call write() again */
+	    else
+		return -1;       /* errno set by write() */
 	}
 	nleft -= nwritten;
 	bufp += nwritten;
@@ -806,13 +807,14 @@ static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n)
     int cnt;
 
     while (rp->rio_cnt <= 0) {  /* Refill if buf is empty */
-	rp->rio_cnt = read(rp->rio_fd, rp->rio_buf, sizeof(rp->rio_buf));
+	rp->rio_cnt = read(rp->rio_fd, rp->rio_buf, 
+			   sizeof(rp->rio_buf));
 	if (rp->rio_cnt < 0) {
 	    if (errno != EINTR) /* Interrupted by sig handler return */
 		return -1;
 	}
 	else if (rp->rio_cnt == 0)  /* EOF */
-        return 0;
+	    return 0;
 	else 
 	    rp->rio_bufptr = rp->rio_buf; /* Reset buffer ptr */
     }
@@ -874,15 +876,15 @@ ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen)
     for (n = 1; n < maxlen; n++) { 
         if ((rc = rio_read(rp, &c, 1)) == 1) {
 	    *bufp++ = c;
-        if (c == '\n') {
+	    if (c == '\n') {
                 n++;
-            break;
+     		break;
             }
 	} else if (rc == 0) {
-        if (n == 1)
-		    return 0; /* EOF, no data read */
-        else
-		    break;    /* EOF, some data was read */
+	    if (n == 1)
+		return 0; /* EOF, no data read */
+	    else
+		break;    /* EOF, some data was read */
 	} else
 	    return -1;	  /* Error */
     }
@@ -897,7 +899,7 @@ ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen)
 ssize_t Rio_readn(int fd, void *ptr, size_t nbytes) 
 {
     ssize_t n;
-
+  
     if ((n = rio_readn(fd, ptr, nbytes)) < 0)
 	unix_error("Rio_readn error");
     return n;
@@ -958,7 +960,7 @@ int open_clientfd(char *hostname, char *port) {
         fprintf(stderr, "getaddrinfo failed (%s:%s): %s\n", hostname, port, gai_strerror(rc));
         return -2;
     }
-
+  
     /* Walk the list for one that we can successfully connect to */
     for (p = listp; p; p = p->ai_next) {
         /* Create a socket descriptor */
@@ -1026,6 +1028,7 @@ int open_listenfd(char *port)
         }
     }
 
+
     /* Clean up */
     freeaddrinfo(listp);
     if (!p) /* No address worked */
@@ -1062,3 +1065,7 @@ int Open_listenfd(char *port)
 }
 
 /* $end csapp.c */
+
+
+
+
